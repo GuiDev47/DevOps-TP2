@@ -41,6 +41,7 @@ jobs:
         with:
           context: ./simple-api
           tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:simple-api
+          password: ${{secrets.DOCKERHUB_TOKEN}}
           push: ${{ github.ref == 'refs/heads/main' }}
 
 
@@ -49,6 +50,7 @@ jobs:
         with:
           context: ./database
           tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:database
+          password: ${{secrets.DOCKERHUB_TOKEN}}
           push: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build image and push httpd
@@ -56,6 +58,7 @@ jobs:
         with:
           context: ./httpd-server
           tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:httpd
+          password: ${{secrets.DOCKERHUB_TOKEN}}
           push: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Login to DockerHub
