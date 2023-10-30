@@ -24,4 +24,5 @@ jobs:
 
       - name: Build and test with Maven
         run:
+          simple-api
           mvn clean install -DskipTests
