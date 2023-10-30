@@ -26,3 +26,38 @@ jobs:
         working-directory: simple-api
         run:
           mvn clean verify
+
+
+  build-and-push-docker-image:
+    needs: test-backend
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build image and push backend
+        uses: docker/build-push-action@v3
+        with:
+          context: ./simple-api
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:simple-api
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+
+      - name: Build image and push database
+        uses: docker/build-push-action@v3
+        with:
+          context: ./database
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:database
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v3
+        with:
+          context: ./httpd-server
+          tags: ${{secrets.DOCKERHUB_USERNAME}}/tp-devops:httpd
+          push: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Login to DockerHub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
