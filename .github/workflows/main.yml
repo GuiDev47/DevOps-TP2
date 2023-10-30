@@ -43,8 +43,6 @@ jobs:
         with:
           context: ./simple-api # Path to your backend code with Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/simple-api # Replace with your Docker image name
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push database image
@@ -52,8 +50,6 @@ jobs:
         with:
           context: ./database # Path to your database code with Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/database # Replace with your Docker image name
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push http-server image
@@ -61,6 +57,4 @@ jobs:
         with:
           context: ./http-server # Path to your httpd code with Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/http-server # Replace with your Docker image name
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.ref == 'refs/heads/main' }}
