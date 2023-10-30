@@ -20,9 +20,9 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: 'temurin'
+          distribution: 'adopt'
 
       - name: Build and test with Maven
         run:
           working-directory: simple-api
-          mvn clean verify
+            mvn clean verify
