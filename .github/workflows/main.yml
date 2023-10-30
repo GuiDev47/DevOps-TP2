@@ -23,6 +23,6 @@ jobs:
           distribution: 'adopt'
 
       - name: Build and test with Maven
-        run:
-          working-directory: simple-api
-            mvn clean verify
+        working-directory: simple-api
+        runs:
+          mvn clean verify
