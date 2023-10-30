@@ -24,7 +24,8 @@ jobs:
 
       - name: Build and test with Maven
         run: |
-          mvn clean verify -f ./simple-api/pom.xml
+          mvn -B verify sonar:sonar -Dsonar.projectKey=devopstp2guillaume_devops -Dsonar.organization=devopstp2guillaume -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./simple-api/pom.xml
+
 
 
   build-and-push-docker-image:
