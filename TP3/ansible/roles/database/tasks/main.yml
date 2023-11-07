@@ -1,0 +1,10 @@
+- name: Launch PostgreSQL Container
+  docker_container:
+    name: my-db
+    image: guibdrd/database:latest
+    env:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASWORD: 'pwd'
+      POSTGRES_DB: 'db'
+    networks:
+      - name: "app-network"

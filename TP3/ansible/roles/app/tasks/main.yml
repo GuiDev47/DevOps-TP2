@@ -1,0 +1,9 @@
+- name: Launch app
+  docker_container:
+    name: my-api
+    image: guibdrd/simple-api:latest
+    pull: true
+    ports: 
+      - '8080:8080'
+    networks:
+      - name: "app-network"

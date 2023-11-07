@@ -1,0 +1,9 @@
+- name: Launch Proxy Container
+  community.general.docker_container:
+    name: frontend_simple_api
+    image: guibdrd/http-server:latest
+    pull: true
+    ports:
+      - '80:80'
+    networks:
+      - name: "app-network"
