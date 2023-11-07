@@ -1,33 +1,33 @@
-version: '3.7'
+version: '3.7'  #Version
 
-services:
-  backend:
-    build: ./simple-api
-    container_name: my-api
-    networks:
+services:  # Définition des services
+  backend:  # Service "backend"
+    build: ./simple-api  # Construit à partir du répertoire "./simple-api"
+    container_name: my-api  # Nom du conteneur
+    networks:  # Réseaux auquel le service est connecté
       - my-network
-    depends_on:
+    depends_on:  # Dépendance avec un autre service
       - database
 
-  database:
-    build: ./database
-    container_name: my-db
-    networks:
+  database:  # Service "database"
+    build: ./database  # Construit à partir du répertoire "./database"
+    container_name: my-db  # Nom du conteneur
+    networks:  # Réseaux sur lequel le service est connecté
       - my-network
-    volumes:
+    volumes:  # Utilisation de volumes pour stocker les données de la base de données
       - db-volume:/var/lib/postgresql/data
 
-  httpd:
-    build: ./http-server
-    ports:
+  httpd:  # Service "httpd"
+    build: ./http-server  # Construit à partir du répertoire "./http-server"
+    ports:  # Ports de l'hôte au conteneur
       - "80:80"
-    networks:
+    networks:  # Réseaux auquel le service est connecté
       - my-network
-    depends_on:
+    depends_on:  # Dépendance envers un autre service
       - backend
 
-volumes:
-  db-volume:
+volumes:  # Définition des volumes
+  db-volume:  # Volume "db-volume" pour stocker les données de la base de données
 
-networks:
-  my-network:
+networks:  # Définition des réseaux
+  my-network:  # Réseau local "my-network" pour connecter les services
