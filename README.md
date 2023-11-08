@@ -131,6 +131,8 @@ jobs:
           mvn -B verify sonar:sonar -Dsonar.projectKey=devopstp2guillaume_devops -Dsonar.organization=devopstp2guillaume -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./simple-api/pom.xml
 ```
 
+#### Affichage dans SonarCloud
+
 ![Affichage dans SonarCloud](/SonarCloud.png)
 
 Nous utilisons des secured variables afin de stocker les données car ce sont des données sensibles (password / Token) que nous souhaitons par partager avec d'autres utilisateurs.
@@ -140,76 +142,85 @@ On utilise "needs: test-backend" afin de lancer le job "build-and-push-docker-im
 ![CI fonctionnel et push](/Working%20CI.png)
 
 ## TP part 03 - Ansible
-Dans notre inventorie, nous avons un fichier setup permettant de configurer ansible.
-##### setup.yml:
+Notre répertoire "Inventories" contient un unique fichier: setup.yml
+
+### 3-1 setup.yml:
 ```yaml
 all:
- vars:
-   ansible_user: centos
-   ansible_ssh_private_key_file: /etc/ansible/id_rsa2
- children:
-   prod:
-     hosts: maxence.dumontier.takima.cloud
+  vars:
+    ansible_user: centos
+    ansible_ssh_private_key_file: ../../../id_rsa
+  children:
+    prod:
+      hosts: guillaume.bodard.takima.cloud
 ```
-Ce fichier indique à ansible l'adresse du serveur (*hosts*), l'utilisateur (*ansible_user*) et la clé permettant d'y accéder (*ansible_ssh_private_key_file*).
 
-La commande suivante permet alors de configurer l'ensemble des serveurs à l'aide du fichier ci-dessus:
+- "ansible_user" indique à ansible l'utilisateur
+- "hosts" indique l'adresse du serveur
+- "ansible_ssh_private_key_file" indique le chemin relatif de la clé ssh privée (ici un fichier nommé id_rsa)
+
+
+Ces données sont alors inscrites dans le fichier **setup.yml**.
+Ainsi, il est possible avec une commande de configurer la connexion au serveur en utilisant les données du fichier ci-dessus.
+
 ```command
 ansible all -i inventories/setup.yml -m setup -a "filter=ansible_distribution*"
 ```
 
-Pour qu'Ansible puisse commencer les configurations, nous avons besoin de créer un *playbook* qui lancera par la suite nos *rôles*, lançant ainsi les configuration et les services sur notre serveur.
-###### playbook.yml
+Pour qu'Ansible puisse commencer les configurations, nous avons besoin de créer un *playbook* qui gèrera les *rôles*, automatisant la configuration et les services.
+
+###### 3-2 playbook.yml
 ```yaml
 - hosts: all
-  gather_facts: false
-  become: true
-  roles:
-    - docker
-    - network
-    - database
-    - app
-    - proxy
+  gather_facts: false
+  become: yes
+  roles:
+    - docker
+    - network
+    - database
+    - app
+    - proxy
 ```
-Nous voyons ci-dessus qui tous les serveurs sont concernés (*hosts: all*) et que nous exécutons cela en tant que super-utilisateur (*become: true*).
-Nous avons ensuite la liste des rôles à exécuter par ansible (*rôle: -docker...*).
 
-###### docker/tasks/main.yml
+Ainsi, le playbook nous permet de lancer avec tous les serveurs (*hosts: all*) les rôles spécifiés dans *roles* (docker, network, etc...) avec une unique commande, et donc d'éviter une répétition de plusieurs commandes.
+
+###### 3-3 docker_container tasks
+
 ```yaml
-- name: Install device-mapper-persistent-data
-  yum:
-    name: device-mapper-persistent-data
-    state: latest
-  
+- name: Clean packages
+  command:
+    cmd: yum clean -y packages
+
+- name: Install  
+  yum:
+    name: device-mapper-persistent-data
+    state: latest
+
 - name: Install lvm2
-  yum:
-    name: lvm2
-    state: latest
-  
+  yum:
+    name: lvm2
+    state: latest
+
 - name: add repo docker
-  command:
-    cmd: sudo yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+  command:
+    cmd: sudo yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 
 - name: Install Docker
-  yum:
-    name: docker-ce
-    state: present
-  
-- name: Install python3
-  yum:
-    name: python3
-    state: present
-  
-- name: Install docker with Python 3
-  pip:
-    name: docker
-    executable: pip3
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
+  yum:
+    name: docker-ce
+    state: present
 
 - name: Make sure Docker is running
-  service: name=docker state=started
-  tags: docker
+  service: name=docker state=started
+  tags: docker
+
 ```
 
-Le docker_container tasks permet la configuration des containers docker au sein de notre serveur. Pour cela plusieurs installation sont nécessaire comme docker (*Install Docker*), python (*Install python3*) ou bien lvm2 (*Install lvm2*). Nous ajoutons également un dossier pour notre projet (*add repo docker*) et nous terminons le rôles en vérifiant que tout est lancé (*Make sure Docker is running*).
+Le script ci-dessus correspond à une série de tâche permettant de configurer l'environnement Docker.
+
+- Nettoyer les packages
+- Installe device-mapper-persistent-data via yum
+- Installe lvm2 via yum
+- Ajoute un répertoire docker qui permettra de le télécharger ensuite
+- Installe Docker
+- S'assure que Docker est bien lancée et fonctionne correctement
