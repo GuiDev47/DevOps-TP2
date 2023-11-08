@@ -89,37 +89,55 @@ ENTRYPOINT : Lancement de l'application en exécutant la commande "java -jar mya
 - docker-compose build: Reconstruit les images pour y apporter lesmodifications  ajoutés précédemment.
 
 #### 1.4 - Documente le fichier docker-compose
-Dans ./TP1-2/docker-compose.yml
 
+[Cliquer ici pour accéder au fichier documenté](/TP1-2/docker-compose.yaml)
 
 ## TP part 02 - Github-Action
 
-*Lien pour le TP2:* https://github.com/Kooitfeet/devops-livecoding
+### Build and test your Application
 
-Les testcontainers est une bibliothèques *Java* permettant de gérer les différents containers dans nos tests. Dans notre exemple, ce sont pour tester la base de données et les autres services.
+Les Testcontainers sont des conteneurs Docker temporaires qui permettent de faciliter les tests d'intégration et/ou unitaire, utilisés principalement dans le développement logicielle nécessitant des dépendances externes.
+
+
+
+
 ```yaml
 name: CI devops 2023
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
 jobs:
-  test-backend: #nom du test
-    runs-on: ubuntu-22.04 #test réalisé sur ubunto
-    steps: #étapes à réaliser
-      - uses: actions/checkout@v2.5.0 #copie le github dans l'environnement test
-      - name: Set up JDK 17 #définition du nom de l'étape
-        use: actions/setup-java@v2 #précise la version de Java
-        with:
-          java-version: 17
-      - name: Build and test with Maven #définition du nom de l'étape
-        run: mvn clear verify #lance la commande pour le test
+  test-backend:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.5.0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: "adopt"
+
+      - name: Build and test with Maven
+        run: |
+          mvn -B verify sonar:sonar -Dsonar.projectKey=devopstp2guillaume_devops -Dsonar.organization=devopstp2guillaume -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  --file ./simple-api/pom.xml
 ```
 
-[Voici le resultat de *SonarCould*.](https://github.com/Kooitfeet/RenduDevOps/blob/master/Pasted%20image%2020231107150135.png)
-Nous voyons que nous avons 2 vulnérabilités de sécurité (dans l'onglet *security*) ainsi qu'un scanne de dossier de seulement 53.6% (dans l'onglet *Coverage*).
-*SonarCloud* conclut que l'analyse n'est pas bonne car il faut un pourcentage supérieur à 80%.
+![Affichage dans SonarCloud](/SonarCloud.png)
+
+Nous utilisons des secured variables afin de stocker les données car ce sont des données sensibles (password / Token) que nous souhaitons par partager avec d'autres utilisateurs.
+
+On utilise "needs: test-backend" afin de lancer le job "build-and-push-docker-image" seulement lorsque le job "test-backend- fonctionne correctement (compile + tests").
+
+![CI fonctionnel et push](/Working%20CI.png)
 
 ## TP part 03 - Ansible
 Dans notre inventorie, nous avons un fichier setup permettant de configurer ansible.
